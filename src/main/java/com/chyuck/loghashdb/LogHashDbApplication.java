@@ -9,5 +9,4 @@ public class LogHashDbApplication {
     public static void main(String[] args) {
         SpringApplication.run(LogHashDbApplication.class, args);
     }
-
 }
