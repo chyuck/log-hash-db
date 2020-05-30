@@ -1,6 +1,12 @@
 # Log structured key-value database with hash indexes
 
-## REST API ##
+## Running ##
+Start database by running the following command:
+```bash
+./mvnw spring-boot:run
+```
+
+## Testing ##
 
 ### Add or update key-value ###
 ```bash
