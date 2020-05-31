@@ -59,10 +59,12 @@ public class DbController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "'key' is not provided");
         }
 
-        if (KEY_VALUES.remove(key) == null) {
+        String value = KEY_VALUES.remove(key);
+
+        if (value == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "'key' is not found");
         }
 
-        return new DbEntry(null, null);
+        return new DbEntry(key, value);
     }
 }

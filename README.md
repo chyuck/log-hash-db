@@ -38,5 +38,8 @@ curl -X DELETE http://localhost:8080/db/TEST_KEY
 ```
 Result:
 ```json
-{}
+{  
+   "key":"TEST_KEY",
+   "value":"TEST_VALUE"
+}
 ```
