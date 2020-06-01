@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +13,7 @@ import com.chyuck.loghashdb.models.DbEntry;
 import com.google.common.base.Preconditions;
 
 @Service
-public class RandomAccessFileService implements DisposableBean, Closeable, AutoCloseable {
+class RandomAccessFileService implements DisposableBean, Closeable, AutoCloseable {
     private static final String FILE_NAME = "db";
 
     private final RandomAccessFile writer;
@@ -23,18 +24,21 @@ public class RandomAccessFileService implements DisposableBean, Closeable, AutoC
         writer.seek(file.length());
     }
 
-    public synchronized long append(DbEntry dbEntry) throws IOException {
+    synchronized long append(DbEntry dbEntry) throws IOException {
         Preconditions.checkNotNull(dbEntry);
+        Preconditions.checkArgument(StringUtils.isNotBlank(dbEntry.getKey()));
 
         long position = writer.getFilePointer();
 
         writer.writeUTF(dbEntry.getKey());
-        writer.writeUTF(dbEntry.getValue());
+
+        String value = StringUtils.isNotBlank(dbEntry.getValue()) ? dbEntry.getValue() : StringUtils.EMPTY;
+        writer.writeUTF(value);
 
         return position;
     }
 
-    public DbEntry get(long position) throws IOException {
+    DbEntry get(long position) throws IOException {
         Preconditions.checkArgument(position >= 0);
 
         try (RandomAccessFile reader = new RandomAccessFile(FILE_NAME, "r")) {

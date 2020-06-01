@@ -1,19 +1,13 @@
 package com.chyuck.loghashdb.models;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-
-import com.google.common.base.Preconditions;
 
 public class DbEntry {
     private final String key;
     private final String value;
 
     public DbEntry(String key, String value) {
-        Preconditions.checkArgument(StringUtils.isNotBlank(key));
-        Preconditions.checkArgument(StringUtils.isNotBlank(value));
-
         this.key = key;
         this.value = value;
     }

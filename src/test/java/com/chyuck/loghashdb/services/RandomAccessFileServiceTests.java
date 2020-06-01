@@ -28,6 +28,18 @@ class RandomAccessFileServiceTests {
     }
 
     @Test
+    void testAppendTombstone() throws IOException {
+        // arrange
+        DbEntry dbEntry = new DbEntry("TEST_KEY", null);
+
+        // act
+        long position = randomAccessFileService.append(dbEntry);
+
+        // assert
+        Assertions.assertTrue(position >= 0);
+    }
+
+    @Test
     void testGet() throws IOException {
         // arrange
         DbEntry dbEntry1 = new DbEntry("TEST_KEY1", "TEST_VALUE1");

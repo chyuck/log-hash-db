@@ -1,4 +1,4 @@
-# Log structured key-value database with hash indexes
+# Log structured key-value database with hash indexes 
 
 ## Running ##
 Start database by running the following command:
@@ -40,6 +40,6 @@ Result:
 ```json
 {  
    "key":"TEST_KEY",
-   "value":"TEST_VALUE"
+   "value":null
 }
 ```
