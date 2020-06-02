@@ -15,15 +15,24 @@ import com.google.common.base.Verify;
 
 @Service
 public class DbService {
-    private final RandomAccessFileService randomAccessFileService;
+    private final FileService fileService;
 
-    private final Map<String, Long> hashIndex = new ConcurrentHashMap<>();
+    private final Map<String, Long> hashIndex;
 
     @Autowired
-    public DbService(RandomAccessFileService randomAccessFileService) {
-        Preconditions.checkNotNull(randomAccessFileService);
+    public DbService(FileService fileService) throws IOException {
+        Preconditions.checkNotNull(fileService);
 
-        this.randomAccessFileService = randomAccessFileService;
+        this.fileService = fileService;
+
+        hashIndex = loadHashIndex();
+    }
+
+    private Map<String, Long> loadHashIndex() throws IOException {
+        Map<String, Long> keysWithPositions = fileService.loadAllKeysWithPositions();
+        Verify.verifyNotNull(keysWithPositions);
+
+        return new ConcurrentHashMap<>(keysWithPositions);
     }
 
     public DbEntry get(String key) throws IOException {
@@ -33,7 +42,7 @@ public class DbService {
         if (position == null)
             return null;
 
-        DbEntry dbEntry = randomAccessFileService.get(position);
+        DbEntry dbEntry = fileService.get(position);
         Verify.verifyNotNull(dbEntry);
         Verify.verify(Objects.equals(dbEntry.getKey(), key));
         Verify.verify(StringUtils.isNotBlank(dbEntry.getValue()));
@@ -46,7 +55,7 @@ public class DbService {
         Preconditions.checkArgument(StringUtils.isNotBlank(dbEntry.getKey()));
         Preconditions.checkArgument(StringUtils.isNotBlank(dbEntry.getValue()));
 
-        long position = randomAccessFileService.append(dbEntry);
+        long position = fileService.update(dbEntry.getKey(), dbEntry.getValue());
         hashIndex.put(dbEntry.getKey(), position);
 
         return dbEntry;
@@ -60,9 +69,8 @@ public class DbService {
 
         hashIndex.remove(key);
 
-        DbEntry dbEntry = new DbEntry(key, null);
-        randomAccessFileService.append(dbEntry);
+        fileService.delete(key);
 
-        return dbEntry;
+        return new DbEntry(key, null);
     }
 }
