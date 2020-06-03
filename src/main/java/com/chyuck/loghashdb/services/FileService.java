@@ -10,6 +10,7 @@ import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import com.chyuck.loghashdb.models.DbEntry;
@@ -18,15 +19,36 @@ import com.google.common.base.Verify;
 
 @Service
 class FileService implements DisposableBean, Closeable, AutoCloseable {
-    private static final String FILE_NAME = "db";
     private static final String DELETED_VALUE = StringUtils.EMPTY;
 
     private final RandomAccessFile writer;
 
-    public FileService() throws IOException {
-        File file = new File(FILE_NAME);
-        writer = new RandomAccessFile(file, "rw");
+    private final String dataFile;
+
+    public FileService(@Value("${app.data.dir}") String directory) throws IOException {
+        Preconditions.checkArgument(StringUtils.isNotBlank(directory));
+
+        this.dataFile = directory + "/data";
+
+        makeSureDirectoryExists(directory);
+        writer = createWriter(dataFile);
+    }
+
+    private static RandomAccessFile createWriter(String dataFile) throws IOException {
+        Preconditions.checkArgument(StringUtils.isNotBlank(dataFile));
+
+        File file = new File(dataFile);
+        RandomAccessFile writer = new RandomAccessFile(file, "rw");
         writer.seek(file.length());
+
+        return writer;
+    }
+
+    private static void makeSureDirectoryExists(String directory) {
+        Preconditions.checkArgument(StringUtils.isNotBlank(directory));
+
+        File file = new File(directory);
+        file.mkdirs();
     }
 
     long update(String key, String value) throws IOException {
@@ -57,7 +79,7 @@ class FileService implements DisposableBean, Closeable, AutoCloseable {
     DbEntry get(long position) throws IOException {
         Preconditions.checkArgument(position >= 0);
 
-        try (RandomAccessFile reader = new RandomAccessFile(FILE_NAME, "r")) {
+        try (RandomAccessFile reader = new RandomAccessFile(dataFile, "r")) {
             reader.seek(position);
 
             String key = reader.readUTF();
@@ -68,7 +90,7 @@ class FileService implements DisposableBean, Closeable, AutoCloseable {
     }
 
     Map<String, Long> loadAllKeysWithPositions() throws IOException {
-        try (RandomAccessFile reader = new RandomAccessFile(FILE_NAME, "r")) {
+        try (RandomAccessFile reader = new RandomAccessFile(dataFile, "r")) {
 
             Map<String, Long> results = new HashMap<>();
 
